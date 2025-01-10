@@ -1,6 +1,5 @@
 import io
 import sys
-import parser
 import inspect
 import traceback
 import contextlib
