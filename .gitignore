@@ -15,3 +15,7 @@ docs/json/
 twemoji/
 .version_full
 lib/lottie/version.py
+*.py[cod]
+*$py.class
+__pycache__/
+*.pyc
