@@ -73,7 +73,7 @@ class TimelineWidget(QWidget):
         self.button_play.setIcon(QIcon.fromTheme("media-playback-stop"))
         self.button_play.setText("Stop")
 
-        self.timer.start(1000/self.fps)
+        self.timer.start(int(1000 / self.fps))
 
     @Slot(bool)
     def play_toggle(self, play):
