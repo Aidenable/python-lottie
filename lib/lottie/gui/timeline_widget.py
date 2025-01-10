@@ -1,3 +1,5 @@
+from typing import Union
+
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtCore import pyqtSignal as Signal
@@ -33,17 +35,17 @@ class TimelineWidget(QWidget):
         self._min = 0
         self._max = 99
 
-    def set_min_max(self, min, max):
-        self._min = min
-        self._max = max
-        self.slider.setMinimum(min)
-        self.slider.setMaximum(max)
-        self.slider_spin.setMinimum(min)
-        self.slider_spin.setMaximum(max)
+    def set_min_max(self, min_: Union[int, float], max_: Union[int, float]):
+        self._min = int(min_)
+        self._max = int(max_)
+        self.slider.setMinimum(self._min)
+        self.slider.setMaximum(self._max)
+        self.slider_spin.setMinimum(self._min)
+        self.slider_spin.setMaximum(self._max)
 
     @Slot(int)
-    def set_frame(self, frame):
-        self.slider.setValue(frame)
+    def set_frame(self, frame: Union[int, float]):
+        self.slider.setValue(int(frame))
 
     @property
     def frame(self):
