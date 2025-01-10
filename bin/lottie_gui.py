@@ -171,7 +171,7 @@ class LottieViewerWindow(QMainWindow):
         self.edit_json.setMarginWidth(0, "0000")
         self.edit_json.setFolding(QsciScintilla.BoxedTreeFoldStyle)
 
-        self.code_font = QFont("monospace", 10)
+        self.code_font = QFont("Menlo", 10)
         self.code_font.setStyleHint(QFont.Monospace)
         self.edit_json.setFont(self.code_font)
 
