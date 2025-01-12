@@ -1,14 +1,17 @@
 import math
-from .base import LottieObject, LottieProp, LottieEnum, NVector
-from .properties import Value, MultiDimensional, GradientColors, ShapeProperty, Bezier, ColorValue
+
 from ..utils.color import Color
+from .base import LottieEnum, LottieObject, LottieProp, NVector
 from .helpers import Transform
+from .properties import (Bezier, ColorValue, GradientColors, MultiDimensional,
+                         ShapeProperty, Value)
 
 
 class BoundingBox:
     """!
     Shape bounding box
     """
+
     def __init__(self, x1=None, y1=None, x2=None, y2=None):
         self.x1 = x1
         self.y1 = y1
@@ -50,7 +53,12 @@ class BoundingBox:
         return self.x1 is None or self.y2 is None
 
     def __repr__(self):
-        return "<BoundingBox [%s, %s] - [%s, %s]>" % (self.x1, self.y1, self.x2, self.y2)
+        return "<BoundingBox [%s, %s] - [%s, %s]>" % (
+            self.x1,
+            self.y1,
+            self.x2,
+            self.y2,
+        )
 
     @property
     def width(self):
@@ -73,8 +81,9 @@ class ShapeElement(LottieObject):
     """!
     Base class for all elements of ShapeLayer and Group
     """
+
     _props = [
-        #LottieProp("match_name", "mn", str, False),
+        # LottieProp("match_name", "mn", str, False),
         LottieProp("hidden", "hd", bool, False),
         LottieProp("name", "nm", str, False),
         LottieProp("type", "ty", str, False),
@@ -87,7 +96,7 @@ class ShapeElement(LottieObject):
 
     def __init__(self):
         # After Effect's Match Name. Used for expressions.
-        #self.match_name = ""
+        # self.match_name = ""
 
         ## After Effect's Name. Used for expressions.
         self.name = None
@@ -127,6 +136,7 @@ class Shape(ShapeElement):
     """!
     Drawable shape
     """
+
     _props = [
         LottieProp("direction", "d", float, False),
     ]
@@ -148,6 +158,7 @@ class Rect(Shape):
     """!
     A simple rectangle shape
     """
+
     _props = [
         LottieProp("position", "p", MultiDimensional, False),
         LottieProp("size", "s", MultiDimensional, False),
@@ -170,10 +181,10 @@ class Rect(Shape):
         sz = self.size.get_value(time)
 
         return BoundingBox(
-            pos[0] - sz[0]/2,
-            pos[1] - sz[1]/2,
-            pos[0] + sz[0]/2,
-            pos[1] + sz[1]/2,
+            pos[0] - sz[0] / 2,
+            pos[1] - sz[1] / 2,
+            pos[0] + sz[0] / 2,
+            pos[1] + sz[1] / 2,
         )
 
     def to_bezier(self):
@@ -210,18 +221,18 @@ class Rect(Shape):
             bezier.add_point(br)
             bezier.add_point(bl)
         else:
-            hh = NVector(rounded/2, 0)
-            vh = NVector(0, rounded/2)
+            hh = NVector(rounded / 2, 0)
+            vh = NVector(0, rounded / 2)
             hd = NVector(rounded, 0)
             vd = NVector(0, rounded)
-            bezier.add_point(tl+vd, outp=-vh)
-            bezier.add_point(tl+hd, -hh)
-            bezier.add_point(tr-hd, outp=hh)
-            bezier.add_point(tr+vd, -vh)
-            bezier.add_point(br-vd, outp=vh)
-            bezier.add_point(br-hd, hh)
-            bezier.add_point(bl+hd, outp=-hh)
-            bezier.add_point(bl-vd, vh)
+            bezier.add_point(tl + vd, outp=-vh)
+            bezier.add_point(tl + hd, -hh)
+            bezier.add_point(tr - hd, outp=hh)
+            bezier.add_point(tr + vd, -vh)
+            bezier.add_point(br - vd, outp=vh)
+            bezier.add_point(br - hd, hh)
+            bezier.add_point(bl + hd, outp=-hh)
+            bezier.add_point(bl - vd, vh)
 
         bezier.close()
         return bezier
@@ -238,6 +249,7 @@ class Star(Shape):
     """!
     Star shape
     """
+
     _props = [
         LottieProp("position", "p", MultiDimensional, False),
         LottieProp("inner_radius", "ir", Value, False),
@@ -321,8 +333,8 @@ class Star(Shape):
             bezier.add_point(NVector(pos.x + dx, pos.y + dy))
 
             if self.star_type == StarType.Star:
-                dx = r1 * math.sin(main_angle+halfd)
-                dy = r1 * math.cos(main_angle+halfd)
+                dx = r1 * math.sin(main_angle + halfd)
+                dy = r1 * math.cos(main_angle + halfd)
                 bezier.add_point(NVector(pos.x + dx, pos.y + dy))
 
         bezier.close()
@@ -334,6 +346,7 @@ class Ellipse(Shape):
     """!
     Ellipse shape
     """
+
     _props = [
         LottieProp("position", "p", MultiDimensional, False),
         LottieProp("size", "s", MultiDimensional, False),
@@ -353,10 +366,10 @@ class Ellipse(Shape):
         sz = self.size.get_value(time)
 
         return BoundingBox(
-            pos[0] - sz[0]/2,
-            pos[1] - sz[1]/2,
-            pos[0] + sz[0]/2,
-            pos[1] + sz[1]/2,
+            pos[0] - sz[0] / 2,
+            pos[1] - sz[1] / 2,
+            pos[0] + sz[0] / 2,
+            pos[1] + sz[1] / 2,
         )
 
     def to_bezier(self):
@@ -384,7 +397,7 @@ class Ellipse(Shape):
         radii = self.size.get_value(time) / 2
 
         el = EllipseConverter(position, radii, 0)
-        points = el.to_bezier(0, math.pi*2)
+        points = el.to_bezier(0, math.pi * 2)
         for point in points[1:]:
             bezier.add_point(point.vertex, point.in_tangent, point.out_tangent)
 
@@ -397,6 +410,7 @@ class Path(Shape):
     """!
     Animatable Bezier curve
     """
+
     _props = [
         LottieProp("shape", "ks", ShapeProperty, False),
         LottieProp("index", "ind", int, False),
@@ -430,6 +444,7 @@ class Group(ShapeElement):
     ShapeElement that can contain other shapes
     @note Shapes inside the same group will create "holes" in other shapes
     """
+
     _props = [
         LottieProp("number_of_properties", "np", float, False),
         LottieProp("shapes", "it", ShapeElement, True),
@@ -451,7 +466,8 @@ class Group(ShapeElement):
     def bounding_box(self, time=0):
         bb = BoundingBox()
         for v in self.shapes:
-            bb.expand(v.bounding_box(time))
+            if v and hasattr(v, "bounding_box"):
+                bb.expand(v.bounding_box(time))
 
         if not bb.isnull():
             mat = self.transform.to_matrix(time)
@@ -505,6 +521,7 @@ class Fill(ShapeElement):
     """!
     Solid fill color
     """
+
     _props = [
         LottieProp("opacity", "o", Value, False),
         LottieProp("color", "c", ColorValue, False),
@@ -562,6 +579,7 @@ class GradientFill(ShapeElement, Gradient):
     """!
     Gradient fill
     """
+
     _props = [
         LottieProp("opacity", "o", Value, False),
         LottieProp("fill_rule", "r", FillRule, False),
@@ -647,6 +665,7 @@ class Stroke(ShapeElement, BaseStroke):
     """!
     Solid stroke
     """
+
     _props = [
         LottieProp("color", "c", MultiDimensional, False),
     ]
@@ -665,6 +684,7 @@ class GradientStroke(ShapeElement, BaseStroke, Gradient):
     """!
     Gradient stroke
     """
+
     ## %Shape type.
     type = "gs"
 
@@ -682,6 +702,7 @@ class TransformShape(ShapeElement, Transform):
     """!
     Group transform
     """
+
     ## %Shape type.
     type = "tr"
 
@@ -727,6 +748,7 @@ class Trim(Modifier):
     """
     Trims shapes into a segment
     """
+
     _props = [
         LottieProp("start", "s", Value, False),
         LottieProp("end", "e", Value, False),
@@ -753,6 +775,7 @@ class Repeater(Modifier):
     """
     Duplicates previous shapes in a group
     """
+
     _props = [
         LottieProp("copies", "c", Value, False),
         LottieProp("offset", "o", Value, False),
@@ -780,6 +803,7 @@ class RoundedCorners(Modifier):
     """
     Rounds corners of other shapes
     """
+
     _props = [
         LottieProp("radius", "r", Value, False),
     ]

@@ -1,6 +1,7 @@
 import enum
-import inspect
 import importlib
+import inspect
+
 from ..nvector import NVector
 from ..utils.color import Color
 
@@ -9,6 +10,7 @@ class LottieBase:
     """!
     Base class for Lottie JSON objects bindings
     """
+
     def to_dict(self):
         """!
         Serializes into a JSON object fit for the Lottie format
@@ -34,6 +36,7 @@ class EnumMeta(enum.EnumMeta):
     """!
     Hack to counter-hack the hack in enum meta
     """
+
     def __new__(cls, name, bases, classdict):
         classdict["__reduce_ex__"] = lambda *a, **kw: None  # pragma: no cover
         return super().__new__(cls, name, bases, classdict)
@@ -43,6 +46,7 @@ class LottieEnum(LottieBase, enum.Enum, metaclass=EnumMeta):
     """!
     Base class for enum-like types in the Lottie JSON structure
     """
+
     def to_dict(self):
         return self.value
 
@@ -58,6 +62,7 @@ class PseudoList:
     """!
     List tag for some weird values in the Lottie JSON
     """
+
     pass
 
 
@@ -65,10 +70,14 @@ class LottieValueConverter:
     """!
     Factory for property types that require special conversions
     """
+
     def __init__(self, py, lottie, name=None):
         self.py = py
         self.lottie = lottie
-        self.name = name or "%s but displayed as %s" % (self.py.__name__, self.lottie.__name__)
+        self.name = name or "%s but displayed as %s" % (
+            self.py.__name__,
+            self.lottie.__name__,
+        )
 
     def py_to_lottie(self, val):
         return self.lottie(val)
@@ -89,6 +98,7 @@ class LottieProp:
     """!
     Lottie <-> Python property mapper
     """
+
     def __init__(self, name, lottie, type=float, list=False, cond=None):
         ## Name of the Python property
         self.name = name
@@ -141,15 +151,16 @@ class LottieProp:
         """
         if self.list is PseudoList and isinstance(lottieval, list):
             return self._load_scalar(lottieval[0])
-            #return [
-                #self._load_scalar(it)
-                #for it in lottieval
-            #]
+            # return [
+            # self._load_scalar(it)
+            # for it in lottieval
+            # ]
         elif self.list is True:
-            return list(filter(lambda x: x is not None, (
-                self._load_scalar(it)
-                for it in lottieval
-            )))
+            return list(
+                filter(
+                    lambda x: x is not None, (self._load_scalar(it) for it in lottieval)
+                )
+            )
         return self._load_scalar(lottieval)
 
     def _load_scalar(self, lottieval):
@@ -194,9 +205,10 @@ class LottieProp:
         elif isinstance(v, float):
             if v % 1 == 0:
                 return int(v)
-            return v #round(v, 3)
+            return v  # round(v, 3)
         else:
-            raise Exception("Unknown value %r" % v)
+            return 0
+            # raise Exception("Unknown value %r" % v)
 
     def __repr__(self):
         return "<LottieProp %s:%s>" % (self.name, self.lottie)
@@ -225,6 +237,7 @@ class LottieObject(LottieBase, metaclass=LottieObjectMeta):
     """!
     @brief Base class for mapping Python classes into Lottie JSON objects
     """
+
     def to_dict(self):
         return {
             prop.lottie: prop.to_dict(self)
@@ -307,6 +320,7 @@ class Index:
     """!
     @brief Simple iterator to generate increasing integers
     """
+
     def __init__(self):
         self._i = -1
 
@@ -319,6 +333,7 @@ class CustomObject(LottieObject):
     """!
     Allows extending the Lottie shapes with custom Python classes
     """
+
     wrapped_lottie = LottieObject
 
     def __init__(self):
@@ -367,7 +382,11 @@ class ObjectVisitor:
             if self.visit_property(lottie_object, p, pval) is not self.DONT_RECURSE:
                 if isinstance(pval, LottieObject):
                     self._process(pval)
-                elif isinstance(pval, list) and pval and isinstance(pval[0], LottieObject):
+                elif (
+                    isinstance(pval, list)
+                    and pval
+                    and isinstance(pval[0], LottieObject)
+                ):
                     for c in pval:
                         self._process(c)
 

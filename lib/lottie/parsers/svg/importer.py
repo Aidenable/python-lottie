@@ -481,7 +481,8 @@ class SvgParser(SvgHandler):
                 fill = objects.Fill(color)
                 opacity = color[3]
             opacity *= float(style.get("fill-opacity", 1))
-            fill.opacity.value = opacity * 100
+            if fill and fill.opacity:
+                fill.opacity.value = opacity * 100
 
             if style.get("fill-rule", "") == "evenodd":
                 fill.fill_rule = objects.FillRule.EvenOdd
@@ -701,8 +702,10 @@ class SvgParser(SvgHandler):
             grad.colors = src.colors
 
         for stop in element.findall("./%s" % self.qualified("svg", "stop")):
+            if 'offset' not in stop.attrib:
+                continue
             off = float(stop.attrib["offset"].strip("%"))
-            if stop.attrib["offset"].endswith("%"):
+            if 'offset' in stop.attrib and stop.attrib["offset"].endswith("%"):
                 off /= 100
             style = self.parse_style(stop, {})
             color = self.parse_color(style["stop-color"])
