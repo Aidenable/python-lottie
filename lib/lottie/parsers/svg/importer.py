@@ -12,6 +12,7 @@ from ...utils.color import Color
 
 try:
     from ...utils import font
+
     has_font = True
 except ImportError:
     has_font = False
@@ -46,7 +47,7 @@ class SvgGradientCoord:
             return
         if attr.endswith("%"):
             self.percent = True
-            self.value = float(attr[:-1])/100
+            self.value = float(attr[:-1]) / 100
         else:
             self.percent = default_percent
             self.value = float(attr)
@@ -91,14 +92,18 @@ class SvgLinearGradient(SvgGradient):
 
     def to_lottie(self, gradient_shape, shape, time=0):
         bbox = shape.bounding_box(time)
-        gradient_shape.start_point.value = self.matrix.apply(NVector(
-            self.x1.to_value(bbox),
-            self.y1.to_value(bbox),
-        ))
-        gradient_shape.end_point.value = self.matrix.apply(NVector(
-            self.x2.to_value(bbox),
-            self.y2.to_value(bbox),
-        ))
+        gradient_shape.start_point.value = self.matrix.apply(
+            NVector(
+                self.x1.to_value(bbox),
+                self.y1.to_value(bbox),
+            )
+        )
+        gradient_shape.end_point.value = self.matrix.apply(
+            NVector(
+                self.x2.to_value(bbox),
+                self.y2.to_value(bbox),
+            )
+        )
         gradient_shape.gradient_type = objects.GradientType.Linear
 
         super().to_lottie(gradient_shape, shape, time)
@@ -119,7 +124,7 @@ class SvgRadialGradient(SvgGradient):
         cy = self.cy.to_value(bbox)
         gradient_shape.start_point.value = self.matrix.apply(NVector(cx, cy))
         r = self.r.to_value(bbox)
-        gradient_shape.end_point.value = self.matrix.apply(NVector(cx+r, cy))
+        gradient_shape.end_point.value = self.matrix.apply(NVector(cx + r, cy))
 
         fx = self.fx.to_value(bbox, cx) - cx
         fy = self.fy.to_value(bbox, cy) - cy
@@ -139,37 +144,81 @@ def parse_color(color, current_color=Color(0, 0, 0, 1)):
     """
     # #fff
     if re.match(r"^#[0-9a-fA-F]{6}$", color):
-        return Color(int(color[1:3], 16) / 0xff, int(color[3:5], 16) / 0xff, int(color[5:7], 16) / 0xff, 1)
+        return Color(
+            int(color[1:3], 16) / 0xFF,
+            int(color[3:5], 16) / 0xFF,
+            int(color[5:7], 16) / 0xFF,
+            1,
+        )
     # #112233
     if re.match(r"^#[0-9a-fA-F]{3}$", color):
-        return Color(int(color[1], 16) / 0xf, int(color[2], 16) / 0xf, int(color[3], 16) / 0xf, 1)
+        return Color(
+            int(color[1], 16) / 0xF, int(color[2], 16) / 0xF, int(color[3], 16) / 0xF, 1
+        )
     # rgba(123, 123, 123, 0.7)
-    match = re.match(r"^rgba\s*\(\s*([0-9]+)\s*,\s*([0-9]+)\s*,\s*([0-9]+)\s*,\s*([0-9.eE]+)\s*\)$", color)
+    match = re.match(
+        r"^rgba\s*\(\s*([0-9]+)\s*,\s*([0-9]+)\s*,\s*([0-9]+)\s*,\s*([0-9.eE]+)\s*\)$",
+        color,
+    )
     if match:
-        return Color(int(match[1])/255, int(match[2])/255, int(match[3])/255, float(match[4]))
+        return Color(
+            int(match[1]) / 255,
+            int(match[2]) / 255,
+            int(match[3]) / 255,
+            float(match[4]),
+        )
     # rgb(123, 123, 123)
     match = re.match(r"^rgb\s*\(\s*([0-9]+)\s*,\s*([0-9]+)\s*,\s*([0-9]+)\s*\)$", color)
     if match:
-        return Color(int(match[1])/255, int(match[2])/255, int(match[3])/255, 1)
+        return Color(int(match[1]) / 255, int(match[2]) / 255, int(match[3]) / 255, 1)
     # rgb(60%, 30%, 20%)
-    match = re.match(r"^rgb\s*\(\s*([0-9]+)%\s*,\s*([0-9]+)%\s*,\s*([0-9]+)%\s*\)$", color)
+    match = re.match(
+        r"^rgb\s*\(\s*([0-9]+)%\s*,\s*([0-9]+)%\s*,\s*([0-9]+)%\s*\)$", color
+    )
     if match:
-        return Color(int(match[1])/100, int(match[2])/100, int(match[3])/100, 1)
+        return Color(int(match[1]) / 100, int(match[2]) / 100, int(match[3]) / 100, 1)
     # rgba(60%, 30%, 20%, 0.7)
-    match = re.match(r"^rgba\s*\(\s*([0-9]+)%\s*,\s*([0-9]+)%\s*,\s*([0-9]+)%\s*,\s*([0-9.eE]+)\s*\)$", color)
+    match = re.match(
+        r"^rgba\s*\(\s*([0-9]+)%\s*,\s*([0-9]+)%\s*,\s*([0-9]+)%\s*,\s*([0-9.eE]+)\s*\)$",
+        color,
+    )
     if match:
-        return Color(int(match[1])/100, int(match[2])/100, int(match[3])/100, float(match[4]))
+        return Color(
+            int(match[1]) / 100,
+            int(match[2]) / 100,
+            int(match[3]) / 100,
+            float(match[4]),
+        )
     # transparent
     if color == "transparent":
         return Color(0, 0, 0, 0)
     # hsl(60, 30%, 20%)
-    match = re.match(r"^hsl\s*\(\s*([0-9]+)\s*,\s*([0-9]+)%\s*,\s*([0-9]+)%\s*\)$", color)
+    match = re.match(
+        r"^hsl\s*\(\s*([0-9]+)\s*,\s*([0-9]+)%\s*,\s*([0-9]+)%\s*\)$", color
+    )
     if match:
-        return Color(*(colorsys.hls_to_rgb(int(match[1])/360, int(match[3])/100, int(match[2])/100) + (1,)))
+        return Color(
+            *(
+                colorsys.hls_to_rgb(
+                    int(match[1]) / 360, int(match[3]) / 100, int(match[2]) / 100
+                )
+                + (1,)
+            )
+        )
     # hsla(60, 30%, 20%, 0.7)
-    match = re.match(r"^hsla\s*\(\s*([0-9]+)\s*,\s*([0-9]+)%\s*,\s*([0-9]+)%\s*,\s*([0-9.eE]+)\s*\)$", color)
+    match = re.match(
+        r"^hsla\s*\(\s*([0-9]+)\s*,\s*([0-9]+)%\s*,\s*([0-9]+)%\s*,\s*([0-9.eE]+)\s*\)$",
+        color,
+    )
     if match:
-        return Color(*(colorsys.hls_to_rgb(int(match[1])/360, int(match[3])/100, int(match[2])/100) + (float(match[4]),)))
+        return Color(
+            *(
+                colorsys.hls_to_rgb(
+                    int(match[1]) / 360, int(match[3]) / 100, int(match[2]) / 100
+                )
+                + (float(match[4]),)
+            )
+        )
     # currentColor
     if color in {"currentColor", "inherit"}:
         return current_color.clone()
@@ -232,7 +281,9 @@ class SvgParser(SvgHandler):
             animation.width = int(round(self._parse_unit(svg.attrib["width"])))
             animation.height = int(round(self._parse_unit(svg.attrib["height"])))
         else:
-            _, _, animation.width, animation.height = map(int, svg.attrib["viewBox"].split(" "))
+            _, _, animation.width, animation.height = map(
+                int, svg.attrib["viewBox"].split(" ")
+            )
         animation.name = self._get_name(svg, self.qualified("sodipodi", "docname"))
 
         if layer_frames:
@@ -250,7 +301,9 @@ class SvgParser(SvgHandler):
         if self.max_time:
             animation.out_point = self.max_time
 
-        self._fix_viewbox(svg, (layer for layer in animation.layers if not layer.parent_index))
+        self._fix_viewbox(
+            svg, (layer for layer in animation.layers if not layer.parent_index)
+        )
 
         return animation
 
@@ -262,7 +315,9 @@ class SvgParser(SvgHandler):
         return layer
 
     def _get_dpi(self, svg):
-        self.dpi = float(svg.attrib.get(self.qualified("inkscape", "export-xdpi"), self.dpi))
+        self.dpi = float(
+            svg.attrib.get(self.qualified("inkscape", "export-xdpi"), self.dpi)
+        )
 
     def _svg_to_layer(self, animation, svg):
         self.animation = animation
@@ -277,10 +332,18 @@ class SvgParser(SvgHandler):
     def _fix_viewbox(self, svg, layers):
         if "viewBox" in svg.attrib:
             vbx, vby, vbw, vbh = map(float, svg.attrib["viewBox"].split())
-            if vbx != 0 or vby != 0 or vbw != self.animation.width or vbh != self.animation.height:
+            if (
+                vbx != 0
+                or vby != 0
+                or vbw != self.animation.width
+                or vbh != self.animation.height
+            ):
                 for layer in layers:
                     layer.transform.position.value = -NVector(vbx, vby)
-                    layer.transform.scale.value = NVector(self.animation.width / vbw, self.animation.height / vbh) * 100
+                    layer.transform.scale.value = (
+                        NVector(self.animation.width / vbw, self.animation.height / vbh)
+                        * 100
+                    )
 
     def _parse_unit(self, value):
         if not isinstance(value, str):
@@ -321,7 +384,12 @@ class SvgParser(SvgHandler):
             value = value[:-1]
             mult = self.dpi / cmin / 40
 
-        return float(value) * mult
+        parsed_value = float(value) * mult
+
+        if hasattr(self, "_parsing_radius") and self._parsing_radius:
+            return float(value)
+
+        return parsed_value
 
     def parse_color(self, color):
         return parse_color(color, self.current_color)
@@ -332,16 +400,18 @@ class SvgParser(SvgHandler):
             itcx = self.qualified("inkscape", "transform-center-x")
             if itcx in element.attrib:
                 cx = float(element.attrib[itcx])
-                cy = float(element.attrib[self.qualified("inkscape", "transform-center-y")])
+                cy = float(
+                    element.attrib[self.qualified("inkscape", "transform-center-y")]
+                )
                 bbx, bby = bb.center()
                 cx += bbx
                 cy = bby - cy
                 dest_trans.anchor_point.value = NVector(cx, cy)
                 dest_trans.position.value = NVector(cx, cy)
-            #else:
-                #c = bb.center()
-                #dest_trans.anchor_point.value = c
-                #dest_trans.position.value = c.clone()
+            # else:
+            # c = bb.center()
+            # dest_trans.anchor_point.value = c
+            # dest_trans.position.value = c.clone()
 
         if "transform" not in element.attrib:
             return
@@ -349,7 +419,9 @@ class SvgParser(SvgHandler):
         matrix = TransformMatrix()
         read_matrix = False
 
-        for t in re.finditer(r"([a-zA-Z]+)\s*\(([^\)]*)\)", element.attrib["transform"]):
+        for t in re.finditer(
+            r"([a-zA-Z]+)\s*\(([^\)]*)\)", element.attrib["transform"]
+        ):
             name = t[1]
             params = list(map(float, t[2].strip().replace(",", " ").split()))
             if name == "translate":
@@ -359,9 +431,13 @@ class SvgParser(SvgHandler):
                 )
             elif name == "scale":
                 xfac = params[0]
-                dest_trans.scale.value[0] = (dest_trans.scale.value[0] / 100 * xfac) * 100
+                dest_trans.scale.value[0] = (
+                    dest_trans.scale.value[0] / 100 * xfac
+                ) * 100
                 yfac = params[1] if len(params) > 1 else xfac
-                dest_trans.scale.value[1] = (dest_trans.scale.value[1] / 100 * yfac) * 100
+                dest_trans.scale.value[1] = (
+                    dest_trans.scale.value[1] / 100 * yfac
+                ) * 100
             elif name == "rotate":
                 ang = params[0]
                 x = y = 0
@@ -393,10 +469,14 @@ class SvgParser(SvgHandler):
             if att in element.attrib:
                 style[att] = element.attrib[att]
         if "style" in element.attrib:
-            style.update(**dict(map(
-                lambda x: map(lambda y: y.strip(), x.split(":")),
-                filter(bool, element.attrib["style"].split(";"))
-            )))
+            style.update(
+                **dict(
+                    map(
+                        lambda x: map(lambda y: y.strip(), x.split(":")),
+                        filter(bool, element.attrib["style"].split(";")),
+                    )
+                )
+            )
         return style
 
     def apply_common_style(self, style, transform):
@@ -404,7 +484,10 @@ class SvgParser(SvgHandler):
         transform.opacity.value = opacity * 100
 
     def apply_visibility(self, style, object):
-        if style.get("display", "inline") == "none" or style.get("visibility", "visible") == "hidden":
+        if (
+            style.get("display", "inline") == "none"
+            or style.get("visibility", "visible") == "hidden"
+        ):
             object.hidden = True
 
     def add_shapes(self, element, shapes, shape_parent, parent_style):
@@ -462,14 +545,20 @@ class SvgParser(SvgHandler):
 
             dash_array = style.get("stroke-dasharray")
             if dash_array and dash_array != "none":
-                values = list(map(self._parse_unit, dash_array.replace(",", " ").split()))
+                values = list(
+                    map(self._parse_unit, dash_array.replace(",", " ").split())
+                )
                 if len(values) % 2:
                     values += values
 
                 stroke.dashes = []
                 for i in range(0, len(values), 2):
-                    stroke.dashes.append(objects.StrokeDash(values[i], objects.StrokeDashType.Dash))
-                    stroke.dashes.append(objects.StrokeDash(values[i+1], objects.StrokeDashType.Gap))
+                    stroke.dashes.append(
+                        objects.StrokeDash(values[i], objects.StrokeDashType.Dash)
+                    )
+                    stroke.dashes.append(
+                        objects.StrokeDash(values[i + 1], objects.StrokeDashType.Gap)
+                    )
 
         fill_color = style.get("fill", "inherit")
         if fill_color not in nocolor:
@@ -513,7 +602,7 @@ class SvgParser(SvgHandler):
         group.name = self._get_name(element, self.qualified("inkscape", "label"))
         self.parse_children(element, group, style)
         self.parse_transform(element, group, group.transform)
-        if group.hidden: # Lottie web doesn't seem to support .hd
+        if group.hidden:  # Lottie web doesn't seem to support .hd
             group.transform.opacity.value = 0
         return group
 
@@ -521,18 +610,20 @@ class SvgParser(SvgHandler):
         ellipse = objects.Ellipse()
         ellipse.position.value = NVector(
             self._parse_unit(element.attrib["cx"]),
-            self._parse_unit(element.attrib["cy"])
+            self._parse_unit(element.attrib["cy"]),
         )
         ellipse.size.value = NVector(
             self._parse_unit(element.attrib["rx"]) * 2,
-            self._parse_unit(element.attrib["ry"]) * 2
+            self._parse_unit(element.attrib["ry"]) * 2,
         )
         self.add_shapes(element, [ellipse], shape_parent, parent_style)
         return ellipse
 
     def _parseshape_anim_ellipse(self, ellipse, element, animations):
         self._merge_animations(element, animations, "cx", "cy", "position")
-        self._merge_animations(element, animations, "rx", "ry", "size", lambda x, y: NVector(x, y) * 2)
+        self._merge_animations(
+            element, animations, "rx", "ry", "size", lambda x, y: NVector(x, y) * 2
+        )
         self._apply_animations(ellipse.position, "position", animations)
         self._apply_animations(ellipse.size, "size", animations)
 
@@ -540,7 +631,7 @@ class SvgParser(SvgHandler):
         ellipse = objects.Ellipse()
         ellipse.position.value = NVector(
             self._parse_unit(element.attrib["cx"]),
-            self._parse_unit(element.attrib["cy"])
+            self._parse_unit(element.attrib["cy"]),
         )
         r = self._parse_unit(element.attrib["r"]) * 2
         ellipse.size.value = NVector(r, r)
@@ -550,7 +641,9 @@ class SvgParser(SvgHandler):
     def _parseshape_anim_circle(self, ellipse, element, animations):
         self._merge_animations(element, animations, "cx", "cy", "position")
         self._apply_animations(ellipse.position, "position", animations)
-        self._apply_animations(ellipse.size, "r", animations, lambda r: NVector(r, r) * 2)
+        self._apply_animations(
+            ellipse.size, "r", animations, lambda r: NVector(r, r) * 2
+        )
 
     def _parseshape_rect(self, element, shape_parent, parent_style):
         rect = objects.Rect()
@@ -558,34 +651,57 @@ class SvgParser(SvgHandler):
         h = self._parse_unit(element.attrib.get("height", 0))
         rect.position.value = NVector(
             self._parse_unit(element.attrib.get("x", 0)) + w / 2,
-            self._parse_unit(element.attrib.get("y", 0)) + h / 2
+            self._parse_unit(element.attrib.get("y", 0)) + h / 2,
         )
         rect.size.value = NVector(w, h)
-        rx = self._parse_unit(element.attrib.get("rx", 0))
-        ry = self._parse_unit(element.attrib.get("ry", 0))
+
+        self._parsing_radius = True
+        try:
+            rx = self._parse_unit(element.attrib.get("rx", 0))
+            ry = self._parse_unit(element.attrib.get("ry", rx))
+        finally:
+            self._parsing_radius = False
+
+        if rx == 0:
+            rx = ry
         rect.rounded.value = (rx + ry) / 2
-        self.add_shapes(element, [rect], shape_parent, parent_style)
-        return rect
+
+        return self.add_shapes(element, [rect], shape_parent, parent_style)
 
     def _parseshape_anim_rect(self, rect, element, animations):
-        self._merge_animations(element, animations, "width", "height", "size", lambda x, y: NVector(x, y))
+        if not isinstance(rect, objects.Group):
+            return
+
+        rect = rect.shapes[0]  # Получаем Rect из Group
+
+        self._merge_animations(
+            element, animations, "width", "height", "size", lambda x, y: NVector(x, y)
+        )
         self._apply_animations(rect.size, "size", animations)
         self._merge_animations(element, animations, "x", "y", "position")
-        self._merge_animations(element, animations, "position", "size", "position", lambda p, s: p + s / 2)
+        self._merge_animations(
+            element, animations, "position", "size", "position", lambda p, s: p + s / 2
+        )
         self._apply_animations(rect.position, "position", animations)
-        self._merge_animations(element, animations, "rx", "ry", "rounded", lambda x, y: (x + y) / 2)
+        self._merge_animations(
+            element, animations, "rx", "ry", "rounded", lambda x, y: (x + y) / 2
+        )
         self._apply_animations(rect.rounded, "rounded", animations)
 
     def _parseshape_line(self, element, shape_parent, parent_style):
         line = objects.Path()
-        line.shape.value.add_point(NVector(
-            self._parse_unit(element.attrib["x1"]),
-            self._parse_unit(element.attrib["y1"])
-        ))
-        line.shape.value.add_point(NVector(
-            self._parse_unit(element.attrib["x2"]),
-            self._parse_unit(element.attrib["y2"])
-        ))
+        line.shape.value.add_point(
+            NVector(
+                self._parse_unit(element.attrib["x1"]),
+                self._parse_unit(element.attrib["y1"]),
+            )
+        )
+        line.shape.value.add_point(
+            NVector(
+                self._parse_unit(element.attrib["x2"]),
+                self._parse_unit(element.attrib["y2"]),
+            )
+        )
         return self.add_shapes(element, [line], shape_parent, parent_style)
 
     def _parseshape_anim_line(self, group, element, animations):
@@ -599,7 +715,7 @@ class SvgParser(SvgHandler):
         line = objects.Path()
         coords = list(map(float, element.attrib["points"].replace(",", " ").split()))
         for i in range(0, len(coords), 2):
-            line.shape.value.add_point(coords[i:i+2])
+            line.shape.value.add_point(coords[i : i + 2])
         return line
 
     def _parseshape_polyline(self, element, shape_parent, parent_style):
@@ -619,8 +735,8 @@ class SvgParser(SvgHandler):
             p = objects.Path()
             p.shape.value = path
             paths.append(p)
-        #if len(d_parser.paths) > 1:
-            #paths.append(objects.shapes.Merge())
+        # if len(d_parser.paths) > 1:
+        # paths.append(objects.shapes.Merge())
         return self.add_shapes(element, paths, shape_parent, parent_style)
 
     def parse_children(self, element, shape_parent, parent_style):
@@ -685,7 +801,9 @@ class SvgParser(SvgHandler):
         return matrix
 
     def _gradient(self, element, grad):
-        grad.matrix = self._transform_to_matrix(element.attrib.get("gradientTransform", ""))
+        grad.matrix = self._transform_to_matrix(
+            element.attrib.get("gradientTransform", "")
+        )
 
         id = element.attrib["id"]
         if id in self.gradients:
@@ -834,22 +952,22 @@ class SvgParser(SvgHandler):
         self._add_style_shapes(style, group)
 
         ## @todo text-anchor when it doesn't match text-align
-        #if element.tag == self.qualified("svg", "text"):
-            #dx = 0
-            #dy = 0
+        # if element.tag == self.qualified("svg", "text"):
+        # dx = 0
+        # dy = 0
 
-            #ta = style.get("text-anchor", style.get("text-align", ""))
-            #if ta == "middle":
-                #dx -= group.bounding_box().width / 2
-            #elif ta == "end":
-                #dx -= group.bounding_box().width
+        # ta = style.get("text-anchor", style.get("text-align", ""))
+        # if ta == "middle":
+        # dx -= group.bounding_box().width / 2
+        # elif ta == "end":
+        # dx -= group.bounding_box().width
 
-            #if dx or dy:
-                #ng = objects.Group()
-                #ng.add_shape(group)
-                #group.transform.position.value.x += dx
-                #group.transform.position.value.y += dy
-                #group = ng
+        # if dx or dy:
+        # ng = objects.Group()
+        # ng.add_shape(group)
+        # group.transform.position.value.x += dx
+        # group.transform.position.value.y += dy
+        # group = ng
 
         shape_parent.shapes.insert(0, group)
         self.parse_transform(element, group, group.transform)
@@ -950,11 +1068,15 @@ class SvgParser(SvgHandler):
 
 
 class PathDParser:
-    _re = re.compile("|".join((
-        r"[a-zA-Z]",
-        r"[-+]?[0-9]*\.?[0-9]*[eE][-+]?[0-9]+",
-        r"[-+]?[0-9]*\.?[0-9]+",
-    )))
+    _re = re.compile(
+        "|".join(
+            (
+                r"[a-zA-Z]",
+                r"[-+]?[0-9]*\.?[0-9]*[eE][-+]?[0-9]+",
+                r"[-+]?[0-9]*\.?[0-9]+",
+            )
+        )
+    )
 
     def __init__(self, d_string):
         self.path = objects.properties.Bezier()
@@ -1107,11 +1229,7 @@ class PathDParser:
         self._do_add_p(pout)
         pin = self.next_vec()
         self.p = self.next_vec()
-        self.path.add_point(
-            self.p.clone(),
-            (pin - self.p),
-            NVector(0, 0)
-        )
+        self.path.add_point(self.p.clone(), (pin - self.p), NVector(0, 0))
         self.implicit = "C"
         self.next_token()
 
@@ -1123,11 +1241,7 @@ class PathDParser:
         self._do_add_p(pout)
         pin = self.p + self.next_vec()
         self.p += self.next_vec()
-        self.path.add_point(
-            self.p.clone(),
-            (pin - self.p),
-            NVector(0, 0)
-        )
+        self.path.add_point(self.p.clone(), (pin - self.p), NVector(0, 0))
         self.implicit = "c"
         self.next_token()
 
@@ -1138,13 +1252,9 @@ class PathDParser:
         pin = self.cur_vec()
         self._do_add_p()
         handle = self.path.in_tangents[-1]
-        self.path.out_tangents[-1] = (-handle)
+        self.path.out_tangents[-1] = -handle
         self.p = self.next_vec()
-        self.path.add_point(
-            self.p.clone(),
-            (pin - self.p),
-            NVector(0, 0)
-        )
+        self.path.add_point(self.p.clone(), (pin - self.p), NVector(0, 0))
         self.implicit = "S"
         self.next_token()
 
@@ -1155,13 +1265,9 @@ class PathDParser:
         pin = self.cur_vec() + self.p
         self._do_add_p()
         handle = self.path.in_tangents[-1]
-        self.path.out_tangents[-1] = (-handle)
+        self.path.out_tangents[-1] = -handle
         self.p += self.next_vec()
-        self.path.add_point(
-            self.p.clone(),
-            (pin - self.p),
-            NVector(0, 0)
-        )
+        self.path.add_point(self.p.clone(), (pin - self.p), NVector(0, 0))
         self.implicit = "s"
         self.next_token()
 
@@ -1172,11 +1278,7 @@ class PathDParser:
         self._do_add_p()
         pin = self.cur_vec()
         self.p = self.next_vec()
-        self.path.add_point(
-            self.p.clone(),
-            (pin - self.p),
-            NVector(0, 0)
-        )
+        self.path.add_point(self.p.clone(), (pin - self.p), NVector(0, 0))
         self.implicit = "Q"
         self.next_token()
 
@@ -1187,11 +1289,7 @@ class PathDParser:
         self._do_add_p()
         pin = self.p + self.cur_vec()
         self.p += self.next_vec()
-        self.path.add_point(
-            self.p.clone(),
-            (pin - self.p),
-            NVector(0, 0)
-        )
+        self.path.add_point(self.p.clone(), (pin - self.p), NVector(0, 0))
         self.implicit = "q"
         self.next_token()
 
@@ -1202,11 +1300,7 @@ class PathDParser:
         self._do_add_p()
         handle = self.p - self.path.in_tangents[-1]
         self.p = self.cur_vec()
-        self.path.add_point(
-            self.p.clone(),
-            (handle - self.p),
-            NVector(0, 0)
-        )
+        self.path.add_point(self.p.clone(), (handle - self.p), NVector(0, 0))
         self.implicit = "T"
         self.next_token()
 
@@ -1217,11 +1311,7 @@ class PathDParser:
         self._do_add_p()
         handle = -self.path.in_tangents[-1] + self.p
         self.p += self.cur_vec()
-        self.path.add_point(
-            self.p.clone(),
-            (handle - self.p),
-            NVector(0, 0)
-        )
+        self.path.add_point(self.p.clone(), (handle - self.p), NVector(0, 0))
         self.implicit = "t"
         self.next_token()
 
@@ -1246,14 +1336,72 @@ class PathDParser:
         if rx == 0 or ry == 0:
             # Straight line
             self.p = dest
-            self.path.add_point(
-                self.p.clone(),
-                NVector(0, 0),
-                NVector(0, 0)
-            )
+            self.path.add_point(self.p.clone(), NVector(0, 0), NVector(0, 0))
             return
 
-        ellipse, theta1, deltatheta = Ellipse.from_svg_arc(self.p, rx, ry, xrot, large, sweep, dest)
+        ellipse, theta1, deltatheta = Ellipse.from_svg_arc(
+            self.p, rx, ry, xrot, large, sweep, dest
+        )
+        points = ellipse.to_bezier(theta1, deltatheta)
+
+        self._do_add_p()
+        self.path.out_tangents[-1] = points[0].out_tangent
+        for point in points[1:-1]:
+            self.path.add_point(
+                point.vertex,
+                point.in_tangent,
+                point.out_tangent,
+            )
+        self.path.add_point(
+            dest.clone(),
+            points[-1].in_tangent,
+            NVector(0, 0),
+        )
+        self.p = dest
+
+    def _parse_a(self):
+        if self.la_type != 1:
+            self.next_token()
+            return
+        r = self.cur_vec()
+        xrot = self.next_token()
+        large = self.next_token()
+        sweep = self.next_token()
+        dest = self.p + self.next_vec()
+        self._do_arc(r[0], r[1], xrot, large, sweep, dest)
+        self.implicit = "a"
+        self.next_token()
+
+    def _parse_Z(self):
+        if self.path.vertices:
+            self.p = self.path.vertices[0].clone()
+        self.path.close()
+        self._push_path()
+
+    def _parse_z(self):
+        self._parse_Z()
+
+    def parse_svg_etree(etree, layer_frames=0, *args, **kwargs):
+        parser = SvgParser()
+        return parser.parse_etree(etree, layer_frames, *args, **kwargs)
+
+    def parse_svg_file(file, layer_frames=0, *args, **kwargs):
+        return parse_svg_etree(ElementTree.parse(file), layer_frames, *args, **kwargs)
+
+    def _do_arc(self, rx, ry, xrot, large, sweep, dest):
+        self._do_add_p()
+        if self.p == dest:
+            return
+
+        if rx == 0 or ry == 0:
+            # Straight line
+            self.p = dest
+            self.path.add_point(self.p.clone(), NVector(0, 0), NVector(0, 0))
+            return
+
+        ellipse, theta1, deltatheta = Ellipse.from_svg_arc(
+            self.p, rx, ry, xrot, large, sweep, dest
+        )
         points = ellipse.to_bezier(theta1, deltatheta)
 
         self._do_add_p()
